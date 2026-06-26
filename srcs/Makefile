@@ -23,4 +23,4 @@ networkls:
 	docker network ls
 
 rmnetwork:
-	docker network rm app-network
+	docker network rm app-network`
