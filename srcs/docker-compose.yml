@@ -61,6 +61,7 @@ services:
       - "443:443"
     volumes:
       - wordpress_data:/var/www/html
+      - portfolio:/var/www/portfolio
     networks:
       - inception
 
@@ -104,6 +105,15 @@ volumes:
       type: none
       device: /home/mlakhdar/data/wordpress
       o: bind
+
+
+  portfolio:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/mlakhdar/Inception/srcs/requirements/bonus/static_website
+      o: bind
+
 
 networks:
   inception:
