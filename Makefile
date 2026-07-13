@@ -1,24 +1,46 @@
-build :
-	mkdir -p /home/mlakhdar/data/wordpress
-	mkdir -p /home/mlakhdar/data/mariadb
-	docker compose -f srcs/docker-compose.yml build  
+NAME        = inception
+COMPOSE     = srcs/docker-compose.yml
+COMPOSE_CMD = docker compose -f $(COMPOSE)
 
-down :
-	docker compose -f srcs/docker-compose.yml down
+DATA_DIR    = $(HOME)/data
+WP_DATA     = $(DATA_DIR)/wordpress
+DB_DATA     = $(DATA_DIR)/mariadb
 
-up :
-	docker compose -f srcs/docker-compose.yml up -d
+all: up
 
-downv:
-	docker compose -f srcs/docker-compose.yml down -v
+up: directories
+	$(COMPOSE_CMD) up -d --build
 
+build:
+	$(COMPOSE_CMD) build
 
-image:
-	docker rmi $(docker images -q)
+start:
+	$(COMPOSE_CMD) start
 
+stop:
+	$(COMPOSE_CMD) stop
 
+down:
+	$(COMPOSE_CMD) down
 
+logs:
+	$(COMPOSE_CMD) logs -f
 
-status: 
-	docker ps -a
+ps:
+	$(COMPOSE_CMD) ps
 
+restart: down up
+
+directories:
+	mkdir -p $(WP_DATA)
+	mkdir -p $(DB_DATA)
+
+clean:
+	$(COMPOSE_CMD) down --remove-orphans
+
+fclean: clean
+	docker system prune -af --volumes
+
+re: fclean all
+
+.PHONY: all up build start stop down logs ps restart directories clean fclean re
