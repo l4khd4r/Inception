@@ -1,0 +1,120 @@
+services:
+  mariadb:
+    build:
+      context: ./requirements/mariadb
+    container_name: mariadb
+    restart: always
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+    expose:
+      - "3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - inception
+
+  wordpress:
+    build:
+      context: ./requirements/wordpress
+    container_name: wordpress
+    restart: always
+    depends_on:
+      - mariadb
+      - redis
+    environment :
+      WORDPRESS_DB_HOST: mariadb:3306
+      WORDPRESS_DB_USER: ${MARIADB_USER}
+      WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD}
+      WORDPRESS_DB_NAME: ${MARIADB_DATABASE}
+
+      WORDPRESS_URL: ${WORDPRESS_URL}
+      WORDPRESS_TITLE: ${WORDPRESS_TITLE}
+      WORDPRESS_ADMIN_USER: ${WORDPRESS_ADMIN_USER}
+      WORDPRESS_ADMIN_PASSWORD: ${WORDPRESS_ADMIN_PASSWORD}
+      WORDPRESS_ADMIN_EMAIL: ${WORDPRESS_ADMIN_EMAIL}
+
+      WORDPRESS_USER: ${WORDPRESS_USER}
+      WORDPRESS_USER_EMAIL: ${WORDPRESS_USER_EMAIL}
+      WORDPRESS_USER_PASSWORD: ${WORDPRESS_USER_PASSWORD}
+
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+
+    expose:
+      - "9000"
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception
+
+  nginx:
+    build:
+      context: ./requirements/nginx
+    container_name: nginx
+    restart: always
+    depends_on:
+      - wordpress
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress_data:/var/www/html
+      - portfolio:/var/www/portfolio
+    networks:
+      - inception
+
+  redis:
+    build:
+      context: ./requirements/bonus/redis
+    container_name: redis
+    restart: always
+    expose:
+      - "6379"
+    networks:
+      - inception
+  
+  ftp:
+    build:
+      context: ./requirements/bonus/ftp
+    container_name: ftp
+    restart: always
+    environment:
+      FTP_USER: ${FTP_USER}
+      FTP_PASSWORD: ${FTP_PASSWORD}
+    ports:
+      - "21:21"
+      - "30000-30009:30000-30009"
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception
+    
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/mlakhdar/data/mariadb
+      o: bind
+
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/mlakhdar/data/wordpress
+      o: bind
+
+
+  portfolio:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/mlakhdar/Inception/srcs/requirements/bonus/static_website
+      o: bind
+
+
+networks:
+  inception:
+    driver: bridge
