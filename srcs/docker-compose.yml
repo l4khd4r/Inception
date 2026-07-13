@@ -91,6 +91,18 @@ services:
     networks:
       - inception
     
+  adminer:
+    build:
+      context: ./requirements/bonus/adminer
+    container_name: adminer
+    restart: always
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks:
+      - inception
+    depends_on:
+      - mariadb
+
 volumes:
   mariadb_data:
     driver: local
