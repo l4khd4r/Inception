@@ -102,6 +102,28 @@ services:
       - inception
     depends_on:
       - mariadb
+ 
+  cadvisor:
+    build:
+      context: ./requirements/bonus/cadvisor
+    container_name: cadvisor
+    restart: always
+    ports:
+      - "8081:8080"
+    volumes:
+      # Access host root filesystem for overall system metrics
+      - /:/rootfs:ro
+      # Access to the Docker socket to read container states
+      - /var/run:/var/run:ro
+      # Access to the Linux cgroup hierarchy to read memory/CPU consumption
+      - /sys:/sys:ro
+      # Access to docker container configurations and volume pathways
+      - /var/lib/docker/:/var/lib/docker:ro
+      # Access to the host system disk configuration for storage stats
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    networks:
+      - inception
 
 volumes:
   mariadb_data:
